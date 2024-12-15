@@ -8,5 +8,6 @@ log
 
 
 # For the theme
-v5.3.2.tar.gz
-bootstrap-5.3.2
+/src/theme/v5.3.2.tar.gz
+/src/theme/bootstrap-5.3.2
+public
