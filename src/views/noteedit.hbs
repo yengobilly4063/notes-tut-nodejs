@@ -1,0 +1,33 @@
+<form method='POST' action='/notes/save'>
+    <div class="container-fluid mt-3">
+        {{#if docreate}}
+            <input type='hidden' name='docreate' value="create">
+            <input type='hidden' name='notekey' value=''/>
+        {{else}}
+            <input type='hidden' name='docreate' value="update">
+            <input type='hidden' name='notekey' value='{{#if note }}{{notekey}}{{/if}}'/>
+        {{/if}}
+        <div class="form-group row align-items-center">
+        {{#if docreate }}
+            {{#if note }}
+                <span class="input-group-text">{{notekey}}</span>
+            {{/if}}
+        {{/if}}
+        </div>
+
+        <div class="form-group row">
+            <label for="title" class="col-1 col-form-label">Title</label>
+            <div class="col">
+                <input type="text" class="form-control" id='title' name='title' placeholder="note title" value='{{#if note }}{{note.title}}{{/if}}'>
+            </div>
+
+        </div>
+        <div class="form-group row">
+            <label for="title" class="col-1 col-form-label">Body</label>
+            <div class="col">
+                <textarea class="form-control" name='body' rows="5">{{#if note }}{{note.body}}{{/if}}</textarea>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-dark">Submit</button>
+    </div>
+</form>

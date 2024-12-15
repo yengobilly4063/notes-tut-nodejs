@@ -1,0 +1,7 @@
+bootstrap-4.*
+node_modules
+.vscode
+bin
+notes.level
+dist
+log

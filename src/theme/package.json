@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "download": "wget https://github.com/twbs/bootstrap/archive/v5.3.2.tar.gz && tar xvfz v5.3.2.tar.gz",
+    "postdownload": "cd bootstrap-5.3.2 && npm install",
+    "clean": "rm -rf bootstrap-5.3.2",
+    "build": "cd bootstrap-5.3.2 && npm run dist",
+    "watch": "cd bootstrap-5.3.2 && npm run watch",
+    "prebuild": "cp _custom.scss bootstrap.scss bootstrap-5.3.2/scss",
+    "postbuild": "mkdir -p dist && cp -r bootstrap-5.3.2/dist ."
+  }
+}
