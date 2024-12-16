@@ -6,3 +6,5 @@ notes.level
 dist
 log
 ch_07.sqlite3
+notes-sequelize.sqlite3
+notes.sqlite3
