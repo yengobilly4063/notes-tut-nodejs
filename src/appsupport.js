@@ -1,7 +1,7 @@
-import { port, server } from "./app.js";
-import { dbgerror, debug } from "./utils/debug.js";
-import * as util from "util";
-import { NotesStore } from "./models/notes-store.js";
+import { port, server } from './app.js';
+import { dbgerror, debug } from './utils/debug.js';
+import * as util from 'util';
+import { NotesStore } from './models/notes-store.js';
 
 export function normalizePort(val) {
     const port = parseInt(val, 10);
@@ -17,28 +17,28 @@ export function normalizePort(val) {
 
 export function onListening() {
     const addr = server.address();
-    const bind = typeof addr === "string" ? `pipe ${addr}` : `port ${addr.port}`;
-    debug(`[Server]: Listening on ${bind}`);
+    const bind = typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
+    debug(`[Server]: Listening at http://127.0.0.1:${port} on ${bind}`);
 }
 
 export function onError(error) {
     dbgerror(error);
-    if (error.syscall !== "listen") {
+    if (error.syscall !== 'listen') {
         throw error;
     }
 
-    const bind = typeof port === "string" ? "Pipe " + port : "Port " + port;
+    const bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port;
 
     switch (error.code) {
-        case "EACCES":
+        case 'EACCES':
             console.error(`${bind} requires elevated privileges`);
             process.exit(1);
             break;
-        case "EADDRINUSE":
+        case 'EADDRINUSE':
             console.error(`${bind} is already in use`);
             process.exit(1);
             break;
-        case "ENOTESSTORE":
+        case 'ENOTESSTORE':
             console.error(`Notes data store initialization failure because `, error.error);
             process.exit(1);
             break;
@@ -48,7 +48,7 @@ export function onError(error) {
 }
 
 export function handle404(req, res, next) {
-    const error = new Error("Not Found");
+    const error = new Error('Not Found');
     error.status = 404;
 
     return next(error);
@@ -63,15 +63,15 @@ export function basicErrorHandler(err, req, res, next) {
 
     // set locals, only providing error in development
     res.locals.message = err.message;
-    res.locals.error = req.app.get("env") === "development" ? err : {};
+    res.locals.error = req.app.get('env') === 'development' ? err : {};
 
     // render the error page
     res.status(err.status || 500);
-    res.render("error");
+    res.render('error');
 }
 
 async function catchProcessDeath() {
-    debug("urk...");
+    debug('urk...');
     await NotesStore.close();
     if (server) {
         await server.close();
@@ -79,20 +79,22 @@ async function catchProcessDeath() {
     process.exit(0);
 }
 
-process.on("SIGTERM", catchProcessDeath);
-process.on("SIGINT", catchProcessDeath);
-process.on("SIGHUP", catchProcessDeath);
+process.on('SIGTERM', catchProcessDeath);
+process.on('SIGINT', catchProcessDeath);
+process.on('SIGHUP', catchProcessDeath);
 
-process.on("exit", () => {
-    debug("exiting...");
+process.on('exit', () => {
+    debug('exiting...');
 });
 
 // Handle uncaughtException
-process.on("uncaughtException", function (err) {
+process.on('uncaughtException', function (err) {
     console.error(`I've crashed!!! - ${err.stack || err}`);
 });
 
 // Handle unhandledRejection
-process.on("unhandledRejection", (reason, processId) => {
-    console.error(`Unhandled Regection at: ${util.inspect(processId)} reason: ${util.inspect(reason)}`);
+process.on('unhandledRejection', (reason, processId) => {
+    console.error(
+        `Unhandled Regection at: ${util.inspect(processId)} reason: ${util.inspect(reason)}`
+    );
 });

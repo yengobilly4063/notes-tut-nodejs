@@ -1,6 +1,6 @@
-import { default as DBG } from "debug";
-const debug = DBG("notes:notes-store");
-const error = DBG("notes:error-store");
+import { default as DBG } from 'debug';
+const debug = DBG('notes:notes-store');
+const error = DBG('notes:error-store');
 
 let _NotesStore;
 

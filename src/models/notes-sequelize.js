@@ -1,9 +1,9 @@
-import { Note, AbstractNotesStore } from "./Notes.js";
-import { Sequelize, Model } from "sequelize";
-import { connectDB as connectSequlz, close as closeSequlz } from "./sequelize.js";
-import { default as DBG } from "debug";
-const debug = DBG("notes:notes-sequelize");
-const error = DBG("notes:error-sequelize");
+import { Note, AbstractNotesStore } from './Notes.js';
+import { Sequelize, Model } from 'sequelize';
+import { connectDB as connectSequlz, close as closeSequlz } from './sequelize.js';
+import { default as DBG } from 'debug';
+const debug = DBG('notes:notes-sequelize');
+const error = DBG('notes:error-sequelize');
 
 let sequelize;
 
@@ -26,7 +26,7 @@ async function connectDB() {
         },
         {
             sequelize,
-            modelName: "notes",
+            modelName: 'notes',
         }
     );
     await SQNOte.sync();
@@ -78,7 +78,7 @@ export default class SequelizeNotesStore extends AbstractNotesStore {
     async keylist() {
         await connectDB();
 
-        const notes = await SQNOte.findAll({ attributes: ["notekey"] });
+        const notes = await SQNOte.findAll({ attributes: ['notekey'] });
         const notekeys = notes.map((note) => note.notekey);
 
         return notekeys;

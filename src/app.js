@@ -13,6 +13,7 @@ import { default as configureServerDebug } from './utils/debug.js';
 // Routers
 import { default as indexRouter } from './routes/index.js';
 import { default as notesRouter } from './routes/notes.js';
+import { default as usersRouter, initPassport } from './routes/users.js';
 
 const app = express();
 
@@ -21,42 +22,40 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 hbs.registerPartials(path.join(__dirname, 'views', 'partials'));
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-// app.use(logger('dev'));
-// app.use(logger(process.env.REQUEST_LOG_FORMAT || 'dev'));
 configureLogs(app);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+// Session
+initPassport(app);
+
+// Static resources
 app.use(express.static(path.join(__dirname, '../', 'public')));
-// app.use(
-//   '/assets/vendor/bootstrap',
-//   express.static(path.join(__dirname, '../', 'node_modules', 'bootstrap', 'dist'))
-// );
+
 app.use(
-  '/assets/vendor/jquery',
-  express.static(path.join(__dirname, '../', 'node_modules', 'jquery', 'dist'))
+    '/assets/vendor/jquery',
+    express.static(path.join(__dirname, '../', 'node_modules', 'jquery', 'dist'))
 );
 app.use(
-  '/assets/vendor/popper.js',
-  express.static(path.join(__dirname, '../', 'node_modules', 'popper.js', 'dist', 'umd'))
+    '/assets/vendor/popper.js',
+    express.static(path.join(__dirname, '../', 'node_modules', 'popper.js', 'dist', 'umd'))
 );
 
 app.use(
-  '/assets/vendor/feather-icons',
-  express.static(path.join(__dirname, '../', 'node_modules', 'feather-icons', 'dist'))
+    '/assets/vendor/feather-icons',
+    express.static(path.join(__dirname, '../', 'node_modules', 'feather-icons', 'dist'))
 );
 // app.use('/assets/vendor/bootstrap', express.static(path.join(__dirname, 'theme', 'dist')));
 app.use(
-  '/assets/vendor/bootstrap/js',
-  express.static(path.join(__dirname, '../', 'node_modules', 'bootstrap', 'dist', 'js'))
+    '/assets/vendor/bootstrap/js',
+    express.static(path.join(__dirname, '../', 'node_modules', 'bootstrap', 'dist', 'js'))
 );
 app.use('/assets/vendor/bootstrap/css', express.static(path.join(__dirname, 'minty')));
 
 // ROUTES
 app.use('/', indexRouter);
 app.use('/notes', notesRouter);
+app.use('/users', usersRouter);
 
 // Error handlers
 // catch 404 and forward to error handler

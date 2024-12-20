@@ -1,10 +1,10 @@
-import * as express from "express";
-import { NotesStore } from "../models/store.js";
+import * as express from 'express';
+import { NotesStore } from '../models/store.js';
 
 const router = express.Router();
 
 /* GET home page. */
-router.get("/", async (req, res, next) => {
+router.get('/', async (req, res, next) => {
   try {
     const keylist = await NotesStore.keylist();
 
@@ -13,7 +13,7 @@ router.get("/", async (req, res, next) => {
     });
     const notelist = await Promise.all(notePromises);
 
-    res.render("index", { title: "Notes", notelist });
+    res.render('index', { title: 'Notes', notelist, user: req.user ? req.user : undefined });
   } catch (err) {
     next(err);
   }
