@@ -46,8 +46,9 @@ export default class SequelizeNotesStore extends AbstractNotesStore {
             throw new Error(`No note found for ${key}`);
         } else {
             await SQNOte.update({ title, body }, { where: { notekey: key } });
-
-            return this.read(key);
+            const note = await this.read(key);
+            this.emitUpdated(note);
+            return note;
         }
     }
 
@@ -55,7 +56,9 @@ export default class SequelizeNotesStore extends AbstractNotesStore {
         await connectDB();
         const sqnote = await SQNOte.create({ notekey: key, title, body });
 
-        return new Note(sqnote.notekey, sqnote.title, sqnote.body);
+        const note = new Note(sqnote.notekey, sqnote.title, sqnote.body);
+        this.emitCreated(note);
+        return note;
     }
 
     async read(key) {
@@ -73,6 +76,7 @@ export default class SequelizeNotesStore extends AbstractNotesStore {
     async destroy(key) {
         await connectDB();
         await SQNOte.destroy({ where: { notekey: key } });
+        this.emitDestroyed(key);
     }
 
     async keylist() {

@@ -12,9 +12,11 @@ import { default as indexRouter } from './routes/index.js';
 import { default as notesRouter } from './routes/notes.js';
 import { default as usersRouter } from './routes/users.js';
 import { configureDotenv } from './utils/dotenv.js';
-import { configureSocketIoServer } from './socket.io.server.js';
 import { initPassport } from './passport.init.js';
 import { initAppSession } from './session.init.js';
+import { Server as SockerServer } from 'socket.io';
+import { default as passportSocketI0 } from 'passport.socketio';
+import { sessionCookieName, sessionSecret, sessionStore } from './utils/session.info.js';
 
 configureDotenv();
 
@@ -25,7 +27,7 @@ export const port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
 // Set up server
-export const httpServer = http.createServer(app);
+const httpServer = http.createServer(app);
 httpServer.listen(port);
 
 httpServer.on('request', configureServerDebug);
@@ -33,7 +35,7 @@ httpServer.on('error', onError);
 httpServer.on('listening', onListening);
 
 // Setup socket.io server
-configureSocketIoServer(httpServer);
+// configureSocketIoServer(httpServer);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -51,6 +53,18 @@ initAppSession(app);
 // Intialize passport, initialization & session injection
 initPassport(app);
 
+// Initi socket.io and passport for socket.io
+const socketio = new SockerServer(httpServer);
+socketio.use(
+    passportSocketI0.authorize({
+        cookieParser: cookieParser,
+        key: sessionCookieName,
+        secret: sessionSecret,
+        store: sessionStore,
+    })
+);
+
+// Set locals middleware
 app.use((req, res, next) => {
     res.locals.user = req.user;
     next();
@@ -89,4 +103,4 @@ app.use('/users', usersRouter);
 app.use(handle404);
 app.use(basicErrorHandler);
 
-export default app;
+export { app as default, httpServer, socketio };
