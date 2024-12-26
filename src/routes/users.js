@@ -4,7 +4,7 @@ import { default as PassportTwitter } from 'passport-twitter';
 import * as usersModel from '../models/users-superagent.js';
 import DBG from 'debug';
 import { default as passport } from 'passport';
-import { sessionCookieName } from '../utils/session-info.js';
+import { sessionCookieName } from '../utils/session.info.js';
 
 const debug = DBG('notes:router-users');
 const error = DBG('notes:error-users');

@@ -1,4 +1,4 @@
-import { port, server } from './app.js';
+import { port, httpServer as server } from './app.js';
 import { dbgerror, debug } from './utils/debug.js';
 import * as util from 'util';
 import { NotesStore } from './models/notes-store.js';
