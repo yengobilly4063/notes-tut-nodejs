@@ -1,35 +1,52 @@
 import { default as express } from 'express';
-import { default as passport } from 'passport';
-import { default as passportLocal } from 'passport-local';
+import { default as PassportLocal } from 'passport-local';
+import { default as PassportTwitter } from 'passport-twitter';
 import * as usersModel from '../models/users-superagent.js';
 import DBG from 'debug';
-import session from 'express-session';
-import sessionFileStore from 'session-file-store';
-
-// Session const info
-const FileStore = sessionFileStore(session);
-export const sessionCookieName = 'notescookie.sid';
+import { default as passport } from 'passport';
+import { sessionCookieName } from '../utils/session-info.js';
 
 const debug = DBG('notes:router-users');
 const error = DBG('notes:error-users');
 
-const LocalStrategy = passportLocal.Strategy;
+const LocalStrategy = PassportLocal.Strategy;
+const TwitterStrategy = PassportTwitter.Strategy;
 
 const router = express.Router();
 
-export function initPassport(app) {
-    app.use(
-        session({
-            store: new FileStore({ path: 'sessions' }),
-            secret: 'keyboard mouse',
-            resave: true,
-            saveUninitialized: true,
-            name: sessionCookieName,
-            cookie: { secure: true },
-        })
+const twitterCallback = process.env.TWITTER_CALLBACK_HOST
+    ? process.env.TWITTER_CALLBACK_HOST
+    : 'http://localhost:3000';
+
+export let twitterLogin;
+
+if (
+    typeof process.env.TWITTER_CONSUMER_KEY !== 'undefined' &&
+    process.env.TWITTER_CONSUMER_KEY !== '' &&
+    typeof process.env.TWITTER_CONSUMER_SECRET !== 'undefined' &&
+    process.env.TWITTER_CONSUMER_SECRET !== ''
+) {
+    passport.use(
+        'twitter',
+        new TwitterStrategy(
+            {
+                consumerKey: process.env.TWITTER_CONSUMER_KEY,
+                consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
+                callbackURL: `${twitterCallback}/users/auth/twitter/callback`,
+            },
+            async function (token, tokenSecret, profile, done) {
+                try {
+                    const user = await usersModel.findOrCreate(profile);
+                    if (user) done(null, user);
+                } catch (err) {
+                    done(err);
+                }
+            }
+        )
     );
-    app.use(passport.initialize());
-    app.use(passport.session());
+    twitterLogin = true;
+} else {
+    twitterLogin = false;
 }
 
 export function ensureAuthenticated(req, res, next) {
@@ -45,26 +62,34 @@ export function ensureAuthenticated(req, res, next) {
 // Routes
 router.get('/login', async (req, res, next) => {
     try {
-        res.render('login', { title: 'Login to Notes', user: req.user });
+        res.render('login', { title: 'Login to Notes', user: req.user, twitterLogin });
     } catch (error) {
         next(error);
     }
 });
 
+// Local Login
 router.post(
     '/login',
     passport.authenticate('local', {
         successRedirect: '/', // SUCCESS: Go to home page
         failureRedirect: '/login', // FAIL: Go to /user/login
-        session: false,
     })
+);
+
+// Twitter Login
+router.get('/auth/twitter', passport.authenticate('twitter'));
+router.get(
+    '/auth/twitter/callback',
+    passport.authenticate('twitter', { successRedirect: '/', failureRedirect: '/users/login' })
 );
 
 router.get('/logout', async (req, res, next) => {
     try {
-        req.session.destroy((err) => err && next(err));
-        req.logout((err) => err && next(err));
+        req.session.destroy();
+        req.logout();
         res.clearCookie(sessionCookieName);
+        res.redirect('/');
     } catch (error) {
         next(error);
     }
@@ -73,11 +98,13 @@ router.get('/logout', async (req, res, next) => {
 // Setup Passport
 // This route gets the content username and password from the post login route/template body
 passport.use(
+    'local',
     new LocalStrategy(async (username, password, done) => {
         try {
             var result = await usersModel.userPasswordCheck(username, password);
             if (result.check) {
-                done(null, { id: result.username, username: result.username });
+                const user = { id: result.username, username: result.username };
+                done(null, user);
             } else {
                 done(null, false, result.message);
             }
@@ -88,17 +115,13 @@ passport.use(
 );
 
 passport.serializeUser(function (user, done) {
-    try {
-        done(null, user.username);
-    } catch (error) {
-        done(error);
-    }
+    done(null, user.username);
 });
 
 passport.deserializeUser(async function (username, done) {
     try {
         var user = await usersModel.findUser(username);
-        done(null, user);
+        if (user) done(null, user);
     } catch (error) {
         done(error);
     }

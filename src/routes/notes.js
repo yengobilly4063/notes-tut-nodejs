@@ -1,7 +1,7 @@
 import { default as express } from 'express';
 import { NotesStore } from '../models/store.js';
 import { generateKey } from '../utils/uuid-keygenerator.js';
-import { ensureAuthenticated } from './users.js';
+import { ensureAuthenticated, twitterLogin } from './users.js';
 
 const router = express.Router();
 
@@ -13,6 +13,7 @@ router.get('/add', ensureAuthenticated, (req, res, next) => {
         notekey: '',
         note: undefined,
         user: req.user,
+        twitterLogin,
     });
 });
 
@@ -48,6 +49,7 @@ router.get('/view', async (req, res, next) => {
             notekey: key,
             note,
             user: req.user ? req.user : undefined,
+            twitterLogin,
         });
     } catch (err) {
         next(err);
@@ -66,6 +68,7 @@ router.get('/edit', ensureAuthenticated, async (req, res, next) => {
             notekey: key,
             note,
             user: req.user,
+            twitterLogin,
         });
     } catch (error) {
         next(error);
@@ -83,6 +86,7 @@ router.get('/destroy', ensureAuthenticated, async (req, res, next) => {
             notekey: key,
             note,
             user: req.user,
+            twitterLogin,
         });
     } catch (error) {
         next(error);

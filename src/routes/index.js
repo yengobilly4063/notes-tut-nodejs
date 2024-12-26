@@ -1,22 +1,28 @@
 import * as express from 'express';
 import { NotesStore } from '../models/store.js';
+import { twitterLogin } from './users.js';
 
 const router = express.Router();
 
 /* GET home page. */
 router.get('/', async (req, res, next) => {
-  try {
-    const keylist = await NotesStore.keylist();
+    try {
+        const keylist = await NotesStore.keylist();
 
-    const notePromises = keylist.map((key) => {
-      return NotesStore.read(key);
-    });
-    const notelist = await Promise.all(notePromises);
+        const notePromises = keylist.map((key) => {
+            return NotesStore.read(key);
+        });
+        const notelist = await Promise.all(notePromises);
 
-    res.render('index', { title: 'Notes', notelist, user: req.user ? req.user : undefined });
-  } catch (err) {
-    next(err);
-  }
+        res.render('index', {
+            title: 'Notes',
+            notelist,
+            user: req.user ? req.user : undefined,
+            twitterLogin,
+        });
+    } catch (err) {
+        next(err);
+    }
 });
 
 export default router;

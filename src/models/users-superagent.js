@@ -1,6 +1,6 @@
-import { default as request } from 'superagent';
-import url from 'url';
+import request from 'superagent';
 import DBG from 'debug';
+import { hashPassword } from '../utils/password-bcrypt.js';
 
 const debug = DBG('notes:users-superagent');
 const error = DBG('notes:error-superagent');
@@ -26,7 +26,7 @@ export async function createUser(
 ) {
     var userData = {
         username,
-        password,
+        password: await hashPassword(password),
         provider,
         familyName,
         givenName,
@@ -56,7 +56,7 @@ export async function update(
 ) {
     const userData = {
         username,
-        password,
+        password: await hashPassword(password),
         provider,
         familyName,
         givenName,
@@ -93,21 +93,21 @@ export async function userPasswordCheck(username, password) {
 }
 
 export async function findOrCreate(profile) {
-    const { username, password, provider, familyName, givenName, middleName, emails, photos } =
-        profile;
+    const user = {
+        id: profile.username,
+        username: profile.username,
+        password: await hashPassword(profile.password),
+        provider: profile.provider,
+        familyName: profile.displayName,
+        givenName: '',
+        middleName: '',
+        photos: profile.photos,
+        emails: profile.emails,
+    };
 
     var res = await request
         .post(reqURL('/find-or-create'))
-        .query({
-            username,
-            password,
-            provider,
-            familyName,
-            givenName,
-            middleName,
-            emails,
-            photos,
-        })
+        .query(user)
         .set('Content-Type', 'application/json')
         .set('Acccept', 'application/json')
         .auth(auth_id, auth_code);

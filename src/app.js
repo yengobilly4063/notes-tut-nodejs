@@ -9,11 +9,18 @@ const __dirname = approotdir;
 import { normalizePort, onError, onListening, handle404, basicErrorHandler } from './appsupport.js';
 import configureLogs from './utils/logger.js';
 import { default as configureServerDebug } from './utils/debug.js';
-
-// Routers
+import session from 'express-session';
+import sessionFileStore from 'session-file-store';
 import { default as indexRouter } from './routes/index.js';
 import { default as notesRouter } from './routes/notes.js';
-import { default as usersRouter, initPassport } from './routes/users.js';
+import { default as usersRouter } from './routes/users.js';
+import { default as passport } from 'passport';
+import { sessionCookieName } from './utils/session-info.js';
+import { configureDotenv } from './utils/dotenv.js';
+
+// Session const info
+const FileStore = sessionFileStore(session);
+configureDotenv();
 
 const app = express();
 
@@ -24,10 +31,24 @@ hbs.registerPartials(path.join(__dirname, 'views', 'partials'));
 
 configureLogs(app);
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-// Session
-initPassport(app);
+app.use(express.urlencoded({ extended: false }));
+app.use(
+    session({
+        store: new FileStore({ path: 'sessions' }),
+        secret: 'keyboard mouse',
+        resave: true,
+        saveUninitialized: true,
+        name: sessionCookieName,
+    })
+);
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use((req, res, next) => {
+    res.locals.user = req.user;
+    next();
+});
 
 // Static resources
 app.use(express.static(path.join(__dirname, '../', 'public')));

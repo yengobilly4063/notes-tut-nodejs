@@ -9,3 +9,9 @@ ch_07.sqlite3
 notes-sequelize.sqlite3
 notes.sqlite3
 sessions
+
+notes-fs-data
+chap07.sqlite3
+package-lock.json
+data
+.env

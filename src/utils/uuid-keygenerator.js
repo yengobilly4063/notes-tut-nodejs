@@ -1,3 +1,5 @@
-import { v4 as uuid } from 'uuid';
+import * as crypto from 'node:crypto';
 
-export const generateKey = () => uuid().split('-').join('');
+export function generateKey() {
+    return crypto.randomBytes(20).toString('hex');
+}
