@@ -2,6 +2,10 @@ import { default as express } from 'express';
 import { NotesStore } from '../models/store.js';
 import { generateKey } from '../utils/uuid-keygenerator.js';
 import { ensureAuthenticated, twitterLogin } from './users.js';
+import { emitNoteTitles } from '../emitters/notes.emitters.js';
+import { socketio } from '../app.js';
+import { NotesEmitEvents } from '../models/event.list.js';
+import util from 'util';
 
 const router = express.Router();
 
@@ -105,6 +109,26 @@ router.post('/destroy/confirm', ensureAuthenticated, async (req, res, next) => {
     }
 });
 
-export function init() {}
+export function init() {
+    socketio.of('/notes').on('connect', (socket) => {
+        if (socket.handshake.query.key) {
+            socket.join(socket.handshake.query.key);
+        }
+    });
+    NotesStore.on(NotesEmitEvents.updated, (note) => {
+        const { key, title, body } = note;
+        const toEmit = {
+            key,
+            title,
+            body,
+        };
+        socketio.of('/notes').to(key).emit(NotesEmitEvents.updated, toEmit);
+        emitNoteTitles();
+    });
+    NotesStore.on(NotesEmitEvents.destroyed, (key) => {
+        socketio.of('/notes').to(key).emit(NotesEmitEvents.destroyed, key);
+        emitNoteTitles();
+    });
+}
 
 export default router;

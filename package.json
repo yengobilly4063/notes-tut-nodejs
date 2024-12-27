@@ -4,7 +4,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "start": "cross-env DEBUG=notes:* node src/app.js",
+        "start": "cross-env DEBUG=notes:*,socket.io:* node src/app.js",
         "dev": "cross-env DEBUG=notes:* PORT=3000 nodemon src/app.js",
         "server1": "cross-env DEBUG=notes:* PORT=3001 node src/app.js",
         "server2": "cross-env DEBUG=notes:* PORT=3002 node src/app.js",

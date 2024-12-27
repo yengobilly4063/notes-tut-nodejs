@@ -1,4 +1,5 @@
 import { default as EventEmitter } from 'events';
+import { NotesEmitEvents } from './event.list.js';
 
 const __note_key = Symbol('key');
 const __note_title = Symbol('title');
@@ -68,12 +69,12 @@ export class AbstractNotesStore extends EventEmitter {
     async count() {}
 
     emitCreated(note) {
-        this.emit('notecreated', note);
+        this.emit(NotesEmitEvents.created, note);
     }
     emitUpdated(note) {
-        this.emit('noteupdated', note);
+        this.emit(NotesEmitEvents.updated, note);
     }
     emitDestroyed(key) {
-        this.emit('notedestroyed', key);
+        this.emit(NotesEmitEvents.destroyed, key);
     }
 }

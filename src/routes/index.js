@@ -2,6 +2,9 @@ import * as express from 'express';
 import { NotesStore } from '../models/store.js';
 import { twitterLogin } from './users.js';
 import { socketio } from '../app.js';
+import { debug } from '../utils/debug.js';
+import { NotesEmitEvents } from '../models/event.list.js';
+import { emitNoteTitles, getKeyTitleList } from '../emitters/notes.emitters.js';
 
 const router = express.Router();
 
@@ -21,28 +24,13 @@ router.get('/', async (req, res, next) => {
     }
 });
 
-async function getKeyTitleList() {
-    const keylist = await NotesStore.keylist();
-    const notePromises = keylist.map((key) => {
-        return NotesStore.read(key);
-    });
-    const notelist = await Promise.all(notePromises);
-
-    return notelist.map(({ key, title }) => ({ key, title }));
-}
-
-const emitNoteTitles = async () => {
-    const notelist = await getKeyTitleList();
-    socketio.of('/home').emit('notetitles', { notelist });
-};
-
 export function init() {
     socketio.of('/home').on('connect', (socket) => {
         debug('socketio connection on /home');
     });
-    NotesStore.on('notecreated', emitNoteTitles);
-    NotesStore.on('noteupdate', emitNoteTitles);
-    NotesStore.on('notedestroy', emitNoteTitles);
+    NotesStore.on(NotesEmitEvents.created, emitNoteTitles);
+    NotesStore.on(NotesEmitEvents.updated, emitNoteTitles);
+    NotesStore.on(NotesEmitEvents.destroyed, emitNoteTitles);
 }
 
 export default router;
