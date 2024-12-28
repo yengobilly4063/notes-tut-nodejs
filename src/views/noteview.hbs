@@ -123,7 +123,7 @@
                 '<small style="display: block">%timestamp%</small>',
                 '</div>',
                     '<button type="button" class="btn btn-primary message-del-button" ', 'data-id="%id%" data-namespace="%namespace%" ', 'data-room="%room%">', 'Delete',
-                '</button>',
+                    '</button>',
                 '</div>',
                 '</div>'
             ].join('\n')
@@ -135,6 +135,18 @@
                 .replace(/%timestamp%/g, newMesg.timestamp);
             $('#noteMessages').prepend(msgtxt);
         })
+
+        $("button.message-del-button").on("click", function(event){
+            socket.emit("destroymessage", {
+                id: $(event.target).data("id"),
+                namespace: $(event.target).data('namespace'),
+                room: $(event.target).data('room')
+            })
+        })
+
+        socket.on('messagedestroyed', data => {
+            $('#note-message-'+data.id).remove();
+        });
     {{/if}}
 </script>
 {{/if }}
