@@ -4,8 +4,17 @@ import { generateKey } from '../utils/uuid-keygenerator.js';
 import { ensureAuthenticated, twitterLogin } from './users.js';
 import { emitNoteTitles } from '../emitters/notes.emitters.js';
 import { socketio } from '../app.js';
-import { NotesEmitEvents } from '../models/event.list.js';
-import util from 'util';
+import { MessagesEmitEvents, NotesEmitEvents } from '../models/event.list.js';
+import {
+    postMessage,
+    destroyMessage,
+    recentMessages,
+    emitter as msgEmitter,
+} from '../models/messages.sequelize.js';
+
+import DBG from 'debug';
+const debug = DBG('notes:home');
+const error = DBG('notes:error-home');
 
 const router = express.Router();
 
@@ -46,13 +55,15 @@ router.get('/view', async (req, res, next) => {
     try {
         const { key } = req.query;
 
-        let note = await NotesStore.read(key);
+        const note = await NotesStore.read(key);
+        const messages = await recentMessages('/notes', key);
 
         res.render('noteview', {
             title: note ? note.title : '',
             notekey: key,
             note,
             user: req.user ? req.user : undefined,
+            messages,
             twitterLogin,
         });
     } catch (err) {
@@ -111,10 +122,31 @@ router.post('/destroy/confirm', ensureAuthenticated, async (req, res, next) => {
 
 export function init() {
     socketio.of('/notes').on('connect', (socket) => {
-        if (socket.handshake.query.key) {
-            socket.join(socket.handshake.query.key);
+        const notekey = socket.handshake.query.key;
+
+        if (notekey) {
+            socket.join(notekey);
+
+            socket.on(MessagesEmitEvents.createmsg, async (newMsg, fn) => {
+                try {
+                    const { from, namespace, room, message } = newMsg;
+                    await postMessage({ from, namespace, room, message });
+                    fn('ok');
+                } catch (err) {
+                    error(`FAIL to create message ${err.stack}`);
+                }
+            });
+
+            socket.on(MessagesEmitEvents.destroymessage, async (data) => {
+                try {
+                    await destroyMessage(data.id);
+                } catch (err) {
+                    error(`FAIL to delete message ${err.stack}`);
+                }
+            });
         }
     });
+
     NotesStore.on(NotesEmitEvents.updated, (note) => {
         const { key, title, body } = note;
         const toEmit = {
@@ -128,6 +160,16 @@ export function init() {
     NotesStore.on(NotesEmitEvents.destroyed, (key) => {
         socketio.of('/notes').to(key).emit(NotesEmitEvents.destroyed, key);
         emitNoteTitles();
+    });
+
+    msgEmitter.on(MessagesEmitEvents.created, (newMsg) => {
+        const { namespace, room } = newMsg;
+        socketio.of(namespace).to(room).emit(MessagesEmitEvents.newmessage, newMsg);
+    });
+
+    msgEmitter.on(MessagesEmitEvents.destroyed, (data) => {
+        const { namespace, room } = data;
+        socketio.of(namespace).to(room).emit(MessagesEmitEvents.destroyed, data);
     });
 }
 
