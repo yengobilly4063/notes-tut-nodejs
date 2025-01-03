@@ -5,6 +5,7 @@
     "type": "module",
     "scripts": {
         "start": "cross-env DEBUG=notes:*,socket.io:* node src/app.js",
+        "on-server": "cross-env DEBUG=notes:* SEQUELIZE_CONNECT=src/models/sequelize-mysql.yaml NOTES_MODEL=sequelize TWITTER_CALLBACK_HOST=http://10.243.127.161:3000 USER_SERVICE_URL=http://10.243.127.253:5858 PORT=3000 node src/app.js",
         "dev": "cross-env DEBUG=notes:* PORT=3000 nodemon src/app.js",
         "server1": "cross-env DEBUG=notes:* PORT=3001 node src/app.js",
         "server2": "cross-env DEBUG=notes:* PORT=3002 node src/app.js",
@@ -46,6 +47,7 @@
         "level": "^9.0.0",
         "mongodb": "^6.12.0",
         "morgan": "~1.9.1",
+        "mysql2": "^3.12.0",
         "passport": "^0.4.1",
         "passport-local": "^1.0.0",
         "passport-twitter": "^1.0.4",
