@@ -26,7 +26,8 @@
         "sequelize-server2": "cross-env NOTES_MODEL=sequelize PORT=3002 node ./src/app.js",
         "mongodb-start": "cross-env DEBUG=notes:* node ./src/app.js",
         "mongodb-server1": "cross-env DEBUG=notes:* PORT=3001 node ./src/app.js",
-        "mongodb-server2": "cross-env DEBUG=notes:* PORT=3002 node ./src/app.js"
+        "mongodb-server2": "cross-env DEBUG=notes:* PORT=3002 node ./src/app.js",
+        "docker-build": "docker build -t svc-notes ."
     },
     "dependencies": {
         "bcrypt": "^5.1.1",

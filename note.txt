@@ -1,1 +1,0 @@
-npm install express-session@1.17.x session-file-store@1.4.x passport@^0.4.x passport-local@1.x --save
