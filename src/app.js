@@ -16,7 +16,7 @@ import { initPassport } from './passport.init.js';
 import { initAppSession } from './session.init.js';
 import { Server as SockerServer } from 'socket.io';
 import { default as passportSocketI0 } from 'passport.socketio';
-import { sessionCookieName, sessionSecret, sessionStore } from './utils/session.info.js';
+import { sessionCookieName, sessionSecret, sessionStore } from './session.init.js';
 
 configureDotenv();
 
@@ -54,7 +54,7 @@ initAppSession(app);
 initPassport(app);
 
 // Initi socket.io and passport for socket.io
-const socketio = new SockerServer(httpServer);
+export const socketio = new SockerServer(httpServer);
 socketio.use(
     passportSocketI0.authorize({
         cookieParser: cookieParser,

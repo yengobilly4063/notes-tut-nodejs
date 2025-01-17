@@ -14,9 +14,10 @@ RUN mkdir -p /notesapp
 COPY . /notesapp/
 
 WORKDIR /notesapp
-RUN npm install
+# RUN npm install -g yarn --force
+RUN yarn install
 
 VOLUME /sessions
 
 EXPOSE 3000
-CMD [ "node", "src/app.js" ]
+CMD [ "yarn", "start" ]
